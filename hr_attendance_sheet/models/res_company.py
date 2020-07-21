@@ -24,7 +24,7 @@ class ResCompany(models.Model):
                    ('4', 'Friday'),
                    ('5', 'Saturday'),
                    ('6', 'Sunday')],
-        string='Week start day',
+        string='Week Starting Day',
         default='0')
 
     attendance_sheet_review_policy = fields.Selection(

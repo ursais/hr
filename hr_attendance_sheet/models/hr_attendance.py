@@ -90,9 +90,9 @@ class HrAttendance(models.Model):
     def _compute_duration(self):
         for rec in self:
             if rec.check_in and rec.check_out:
-                """ If split attendance is enabled and less than 2days between
-                check-in/out, then split the attendance into two attendances
-                with clock out/in at midnight"""
+                # If split attendance is enabled and less than 2days between
+                # check-in/out, then split the attendance into two attendances
+                # with clock out/in at midnight
                 check_in_date = rec._get_attendance_employee_tz(
                     date=rec.check_in)
                 check_out_date = rec._get_attendance_employee_tz(
@@ -120,7 +120,7 @@ class HrAttendance(models.Model):
                         'check_out': new_check_out,
                         'split_attendance': False})
 
-                """ Calculate attendance duration """
+                # Calculate attendance duration
                 date1 = datetime.strptime(str(rec.check_in),
                                           DEFAULT_SERVER_DATETIME_FORMAT)
                 date2 = datetime.strptime(str(rec.check_out),
@@ -131,13 +131,13 @@ class HrAttendance(models.Model):
                                             (tot_sec % 3600) // 60))
                 rec.duration = float(duration_hour)
 
-                """ If auto lunch is enabled for the company then adjust the
-                duration calculation."""
+                # If auto lunch is enabled for the company then adjust the
+                # duration calculation.
                 if rec.company_id.auto_lunch and \
                         rec.duration > \
                         rec.company_id.auto_lunch_duration != 0.0:
                     rec.duration = float(duration_hour) - \
-                                    rec.company_id.auto_lunch_hours
+                        rec.company_id.auto_lunch_hours
                     rec.write({'auto_lunch': True})
                 elif rec.company_id.auto_lunch and rec.auto_lunch:
                     rec.write({'auto_lunch': False})

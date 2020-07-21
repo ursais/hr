@@ -15,7 +15,7 @@ class ResConfigSettings(models.TransientModel):
 
     attendance_week_start = fields.Selection(
         related='company_id.attendance_week_start',
-        string="Week Start Day",
+        string="Week Starting Day",
         help="Starting day for Attendance Sheets.",
         readonly=False)
 

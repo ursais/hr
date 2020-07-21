@@ -7,12 +7,13 @@
         file="hr_attendance_sheet.report_hr_attendance_sheet_document"
         report_type="qweb-pdf"/>
 
-      <report id="hr_attendance_sheet_preview"
-          model="hr.attendance.sheet"
-          string="Attendance Sheet Preview"
-          name="hr_attendance_sheet.report_hr_attendance_sheet_document"
-          file="hr_attendance_sheet.report_hr_attendance_sheet_document"
-          report_type="qweb-html"/>
+    <report
+        id="hr_attendance_sheet_preview"
+        model="hr.attendance.sheet"
+        string="Attendance Sheet Preview"
+        name="hr_attendance_sheet.report_hr_attendance_sheet_document"
+        file="hr_attendance_sheet.report_hr_attendance_sheet_document"
+        report_type="qweb-html"/>
 
     <template id="report_hr_attendance_sheet_document">
         <t t-name="hr_attendance_sheet.report_hr_attendance_sheet_document">
@@ -58,5 +59,4 @@
             </t>
         </t>
   </template>
-
 </odoo>

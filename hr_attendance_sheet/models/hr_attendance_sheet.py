@@ -1,10 +1,10 @@
 # Copyright 2020 Pavlov Media
 # License LGPL-3 - See http://www.gnu.org/licenses/lgpl-3.0.html
 
-from dateutil.relativedelta import relativedelta, SU
+from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models, SUPERUSER_ID, _
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import UserError
 from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
 from datetime import datetime
 
@@ -163,15 +163,12 @@ class HrAttendanceSheet(models.Model):
         for sheet in self:
             if sheet.employee_id and sheet.date_start and sheet.date_end:
                 sheet.name = sheet.employee_id.name + " (" + \
-                             str(datetime.strptime(
-                                str(sheet.date_start),
-                                DEFAULT_SERVER_DATE_FORMAT).
-                                        strftime('%m/%d/%y')) + \
-                             " - " + \
-                             str(datetime.strptime(
-                                 str(sheet.date_end),
-                                 DEFAULT_SERVER_DATE_FORMAT).
-                                 strftime('%m/%d/%y')) + ")"
+                    str(datetime.strptime(
+                        str(sheet.date_start),
+                        DEFAULT_SERVER_DATE_FORMAT).strftime('%m/%d/%y')) + \
+                    " - " + str(datetime.strptime(
+                        str(sheet.date_end),
+                        DEFAULT_SERVER_DATE_FORMAT).strftime('%m/%d/%y')) + ")"
 
     @api.depends('attendance_ids.duration')
     def _compute_total_time(self):
@@ -202,7 +199,7 @@ class HrAttendanceSheet(models.Model):
             res |= self.employee_id.parent_id.user_id
         elif self.review_policy == 'hr_or_manager':
             res |= self.employee_id.parent_id.user_id + \
-                   self.env.ref('hr.group_hr_user').users
+                self.env.ref('hr.group_hr_user').users
         return res
 
     @api.multi
