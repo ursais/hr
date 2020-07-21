@@ -3,7 +3,7 @@
         <field name="name">hr.attendance.sheet.tree</field>
         <field name="model">hr.attendance.sheet</field>
         <field name="arch" type="xml">
-            <tree string="Attendance sheets">
+            <tree string="Attendance sheets" decoration-danger="state=='draft'" decoration-info="state=='confirm'" decoration-success="state=='done'" decoration-it="state=='locked'">
                 <field name="name"/>
                 <field name="state"/>
                 <field name="employee_id"/>
@@ -17,7 +17,7 @@
         <field name="name">hr.attendance.sheet.form</field>
         <field name="model">hr.attendance.sheet</field>
         <field name="arch" type="xml">
-            <form string="Attendance Sheet" decoration-danger="state=='draft'" decoration-info="state=='confirm'" decoration-success="state=='done'" decoration-it="state=='locked'">
+            <form string="Attendance Sheet">
                 <header>
                     <button
                         name="action_attendance_sheet_confirm"
