@@ -24,9 +24,6 @@ class HrAttendance(models.Model):
     auto_lunch = fields.Boolean(
         string="Auto Lunch Applied",
         help="If Auto Lunch is enabled and applied on this attendance.")
-    split_attendance = fields.Boolean(
-        string="Split Attendance",
-        help="If attendance was split due to overnight coverage.")
     company_id = fields.Many2one(
         'res.company',
         string="Company",
@@ -90,37 +87,6 @@ class HrAttendance(models.Model):
     def _compute_duration(self):
         for rec in self:
             if rec.check_in and rec.check_out:
-                # If split attendance is enabled and less than 2days between
-                # check-in/out, then split the attendance into two attendances
-                # with clock out/in at midnight
-                check_in_date = rec._get_attendance_employee_tz(
-                    date=rec.check_in)
-                check_out_date = rec._get_attendance_employee_tz(
-                    date=rec.check_out)
-                if rec.company_id.split_attendance and \
-                        check_in_date != check_out_date and \
-                        not rec.split_attendance:
-                    tz = pytz.timezone(rec.employee_id.tz)
-                    current_check_out = tz.localize(
-                        datetime.combine(datetime.strptime(
-                            str(rec.check_in.date()),
-                            DEFAULT_SERVER_DATE_FORMAT),
-                            time(23, 59, 59))).astimezone(pytz.utc)
-                    new_check_out = rec.check_out
-                    new_check_in = tz.localize(datetime.combine(
-                        datetime.strptime(
-                            check_in_date,
-                            DEFAULT_SERVER_DATE_FORMAT) + timedelta(days=1),
-                        time(0, 0, 0))).astimezone(pytz.utc)
-                    rec.write({'check_out': current_check_out,
-                               'split_attendance': True})
-                    self.env['hr.attendance'].sudo().create({
-                        'employee_id': rec.employee_id.id,
-                        'check_in': new_check_in,
-                        'check_out': new_check_out,
-                        'split_attendance': False})
-
-                # Calculate attendance duration
                 date1 = datetime.strptime(str(rec.check_in),
                                           DEFAULT_SERVER_DATETIME_FORMAT)
                 date2 = datetime.strptime(str(rec.check_out),

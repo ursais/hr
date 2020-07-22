@@ -23,12 +23,6 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.attendance_sheet_review_policy',
         readonly=False)
 
-    split_attendance = fields.Boolean(
-        string="Split Attendance",
-        related='company_id.split_attendance',
-        help="Split attendance into two start/end times cross over midnight.",
-        readonly=False)
-
     auto_lunch = fields.Boolean(
         string="Auto Lunch",
         related='company_id.auto_lunch',

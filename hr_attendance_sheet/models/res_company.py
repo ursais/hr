@@ -37,10 +37,6 @@ class ResCompany(models.Model):
         default='hr',
         help='How Attendance Sheets review is performed.')
 
-    split_attendance = fields.Boolean(
-        string="Split Attendance",
-        help="Split attendance into two start/end times cross over midnight.")
-
     auto_lunch = fields.Boolean(
         string="Auto Lunch",
         help="Applies a lunch period if duration is over the max time.")
