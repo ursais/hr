@@ -4,7 +4,6 @@
 from odoo import api, fields, models, _
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT, \
     DEFAULT_SERVER_DATE_FORMAT
-from odoo.exceptions import UserError
 
 import pytz
 from datetime import datetime, timedelta, time
@@ -39,6 +38,8 @@ class HrAttendance(models.Model):
 
     @api.multi
     def write(self, vals):
+        """ If the user clocks out after midnight, then it will split the
+        attendance at midnight of the employees timezone."""
         for rec in self:
             if 'check_out' in vals:
                 check_out = vals.get('check_out')
@@ -81,6 +82,8 @@ class HrAttendance(models.Model):
 
     @api.model
     def create(self, vals):
+        """ If during creation, check-out crosses overnight, then make sure
+        the clock-out is at local midnight to prevent overnight attendances"""
         if 'check_out' in vals and vals.get('check_out', False):
             employee = self.env['hr.employee'].browse(vals['employee_id'])
             check_in_date = self._get_attendance_employee_tz(
@@ -95,17 +98,5 @@ class HrAttendance(models.Model):
                     datetime.strptime(str(check_in.date()),
                                       DEFAULT_SERVER_DATE_FORMAT),
                     time(23, 59, 59))).astimezone(pytz.utc)
-                new_check_out = vals.get('check_out')
-                new_check_in = tz.localize(datetime.combine(
-                    datetime.strptime(check_in_date,
-                                      DEFAULT_SERVER_DATE_FORMAT) + timedelta(
-                                      days=1),
-                    time(0, 0, 0))).astimezone(pytz.utc)
-                vals.update({'check_out': current_check_out,
-                             'split_attendance': True})
-                self.env['hr.attendance'].sudo().create({
-                    'employee_id': employee.id,
-                    'check_in': new_check_in,
-                    #'check_out': new_check_out,
-                    'split_attendance': False})
+                vals.update({'check_out': current_check_out})
         return super().create(vals)
