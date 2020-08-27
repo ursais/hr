@@ -81,7 +81,7 @@ class HrAttendance(models.Model):
     def create(self, vals):
         """ If during creation, check-out crosses overnight, then make sure
         the clock-out is at local midnight to prevent overnight attendances"""
-        if 'check_out' in vals and vals.get('check_out', False):
+        if vals.get('check_out', False):
             employee = self.env['hr.employee'].browse(vals['employee_id'])
             check_in_date = self._get_attendance_employee_tz(
                 date=vals.get('check_in'))
