@@ -1,7 +1,7 @@
 # Copyright 2020 Pavlov Media
 # License LGPL-3 - See http://www.gnu.org/licenses/lgpl-3.0.html
 
-from odoo import api, fields, models, _
+from odoo import api, fields, models
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT, \
     DEFAULT_SERVER_DATE_FORMAT
 
