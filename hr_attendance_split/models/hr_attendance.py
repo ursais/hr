@@ -41,10 +41,7 @@ class HrAttendance(models.Model):
         """ If the user clocks out after midnight, then it will split the
         attendance at midnight of the employees timezone."""
         for rec in self:
-            if 'check_out' in vals:
-                check_out = vals.get('check_out')
-            else:
-                check_out = rec.check_out
+            check_out = vals.get('check_out', False) or rec.check_out
             check_in = vals.get('check_in', False) or rec.check_in
             if check_in and check_out:
                 check_in_date = rec._get_attendance_employee_tz(
