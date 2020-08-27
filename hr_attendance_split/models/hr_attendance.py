@@ -45,10 +45,7 @@ class HrAttendance(models.Model):
                 check_out = vals.get('check_out')
             else:
                 check_out = rec.check_out
-            if 'check_in' in vals:
-                check_in = vals.get('check_in')
-            else:
-                check_in = rec.check_in
+            check_in = vals.get('check_in', False) or rec.check_in
             if check_in and check_out:
                 check_in_date = rec._get_attendance_employee_tz(
                     date=check_in)
