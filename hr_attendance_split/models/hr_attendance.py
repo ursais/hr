@@ -22,11 +22,11 @@ class HrAttendance(models.Model):
 
     def _get_attendance_employee_tz(self, date=None):
         """ Convert date according to timezone of user """
+        if not date:
+            return False
         tz = False
         if self.employee_id:
             tz = self.employee_id.tz
-        if not date:
-            return False
         time_zone = pytz.timezone(tz or 'UTC')
         attendance_dt = datetime.strptime(str(date),
                                           DEFAULT_SERVER_DATETIME_FORMAT)
