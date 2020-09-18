@@ -14,6 +14,7 @@ class HrAttendanceSheet(models.Model):
     _description = 'Attendance Sheet'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
+    active = fields.Boolean(string="Active", default=True)
     name = fields.Char(compute='_compute_name', context_dependent=True)
     employee_id = fields.Many2one('hr.employee', string="Employee",
                                   required=True)

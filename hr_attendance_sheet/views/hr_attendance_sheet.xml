@@ -89,6 +89,7 @@
                                         <field name="attendance_sheet_id" invisible="1"/>
                                         <field name="check_in"/>
                                         <field name="check_out"/>
+                                        <field name="auto_lunch" readonly="1"/>
                                         <field name="duration" widget="timesheet_uom"/>
                                     </tree>
                                 </field>
