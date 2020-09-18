@@ -37,60 +37,37 @@ class HrAttendance(models.Model):
         return attendance_tz_date_str
 
     @api.multi
-    def write(self, vals):
-        """ If the user clocks out after midnight, then it will split the
-        attendance at midnight of the employees timezone."""
+    def _compute_duration(self):
+        res = super()._compute_duration()
         for rec in self:
-            check_out = vals.get('check_out', False) or rec.check_out
-            check_in = vals.get('check_in', False) or rec.check_in
-            if check_in and check_out:
+            if rec.check_in and rec.check_out:
+                """ If split attendance is enabled and less than 2days between
+                check-in/out, then split the attendance into two attendances
+                with clock out/in at midnight"""
                 check_in_date = rec._get_attendance_employee_tz(
-                    date=check_in)
+                    date=rec.check_in)
                 check_out_date = rec._get_attendance_employee_tz(
-                    date=check_out)
+                    date=rec.check_out)
                 if rec.company_id.split_attendance and \
-                    check_in_date != check_out_date and \
+                        check_in_date != check_out_date and \
                         not rec.split_attendance:
                     tz = pytz.timezone(rec.employee_id.tz)
                     current_check_out = tz.localize(
                         datetime.combine(datetime.strptime(
-                            str(check_in.date()),
+                            str(rec.check_in.date()),
                             DEFAULT_SERVER_DATE_FORMAT),
                             time(23, 59, 59))).astimezone(pytz.utc)
-                    new_check_out = check_out
+                    new_check_out = rec.check_out
                     new_check_in = tz.localize(datetime.combine(
                         datetime.strptime(
                             check_in_date,
-                            DEFAULT_SERVER_DATE_FORMAT) + timedelta(
-                            days=1),
+                            DEFAULT_SERVER_DATE_FORMAT) + timedelta(days=1),
                         time(0, 0, 0))).astimezone(pytz.utc)
-                    vals.update({'check_out': current_check_out,
-                                 'split_attendance': True})
+                    rec.write({'check_out': current_check_out,
+                               'split_attendance': True})
                     self.env['hr.attendance'].sudo().create({
                         'employee_id': rec.employee_id.id,
                         'check_in': new_check_in,
                         'check_out': new_check_out,
                         'split_attendance': False})
-        res = super(HrAttendance, self).write(vals)
         return res
-
-    @api.model
-    def create(self, vals):
-        """ If during creation, check-out crosses overnight, then make sure
-        the clock-out is at local midnight to prevent overnight attendances"""
-        if vals.get('check_out', False):
-            employee = self.env['hr.employee'].browse(vals['employee_id'])
-            check_in_date = self._get_attendance_employee_tz(
-                date=vals.get('check_in'))
-            check_out_date = self._get_attendance_employee_tz(
-                date=vals.get('check_out'))
-            check_in = datetime.strptime(vals.get('check_in'),
-                                         '%Y-%m-%d %H:%M:%S')
-            if check_in_date != check_out_date:
-                tz = pytz.timezone(employee.tz)
-                current_check_out = tz.localize(datetime.combine(
-                    datetime.strptime(str(check_in.date()),
-                                      DEFAULT_SERVER_DATE_FORMAT),
-                    time(23, 59, 59))).astimezone(pytz.utc)
-                vals.update({'check_out': current_check_out})
-        return super().create(vals)
