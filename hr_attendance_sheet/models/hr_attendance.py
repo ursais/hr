@@ -80,8 +80,9 @@ class HrAttendance(models.Model):
                         ('date_end', '>=', check_in),
                     ]
                     attendance_sheet_ids = sheet_obj.search(domain, limit=1)
-                    attendance.attendance_sheet_id = \
-                        attendance_sheet_ids or False
+                    if attendance_sheet_ids.state not in ('locked', 'done'):
+                        attendance.attendance_sheet_id = \
+                            attendance_sheet_ids or False
 
     @api.multi
     def _compute_duration(self):
