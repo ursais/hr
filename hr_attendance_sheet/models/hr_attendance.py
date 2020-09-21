@@ -88,9 +88,7 @@ class HrAttendance(models.Model):
     def _compute_duration(self):
         for rec in self:
             if rec.check_in and rec.check_out:
-                start = fields.Datetime.from_string(rec.check_in)
-                end = fields.Datetime.from_string(rec.check_out)
-                delta = end - start
+                delta = rec.check_out - rec.check_in
                 rec.duration = delta.total_seconds() / 3600
 
                 # If auto lunch is enabled for the company then adjust the
