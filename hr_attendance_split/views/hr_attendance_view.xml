@@ -6,7 +6,6 @@
         <field name="arch" type="xml">
             <field name="check_out" position="after">
                 <field name="split_attendance" readonly="1"/>
-                <field name="need_split" invisible="1"/>
             </field>
         </field>
     </record>
@@ -18,7 +17,7 @@
             <sheet position="inside">
                 <group>
                     <field name="split_attendance" invisible="1"/>
-                    <field name="need_split" invisible="1"/>
+                    <field name="related_attendance_id" readonly="1" attrs="{'invisible': [('split_attendance', '=', False)]}"/>
                 </group>
             </sheet>
             <sheet position="before">

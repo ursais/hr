@@ -1,12 +1,13 @@
 # Copyright 2020 Pavlov Media
 # License LGPL-3 - See http://www.gnu.org/licenses/lgpl-3.0.html
 
-from odoo import api, fields, models
+from odoo import api, fields, models, _
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT, \
     DEFAULT_SERVER_DATE_FORMAT
 
 import pytz
 from datetime import datetime, timedelta, time
+from odoo.exceptions import ValidationError
 
 
 class HrAttendance(models.Model):
@@ -15,13 +16,12 @@ class HrAttendance(models.Model):
     split_attendance = fields.Boolean(
         string="Split Attendance",
         help="If attendance was split due to overnight coverage.")
-    need_split = fields.Boolean(
-        string="Split Needed",
-        compute="_compute_split")
     company_id = fields.Many2one(
         'res.company',
         string="Company",
         related="employee_id.company_id", store=True)
+    related_attendance_id = fields.Many2one('hr.attendance',
+                                            string='Related Attendance')
 
     def _get_attendance_employee_tz(self, date=None):
         """ Convert date according to timezone of user """
@@ -39,18 +39,33 @@ class HrAttendance(models.Model):
             attendance_tz_dt, DEFAULT_SERVER_DATE_FORMAT)
         return attendance_tz_date_str
 
+    @api.model
+    def create(self, vals):
+        """ Prevent overnight attendance during creation"""
+        if vals.get('check_out', False):
+            check_in_date = self._get_attendance_employee_tz(
+                date=vals.get('check_in'))
+            check_out_date = self._get_attendance_employee_tz(
+                date=vals.get('check_out'))
+            employee = self.env['hr.employee'].browse(vals.get('employee_id'))
+            if employee.company_id.split_attendance and \
+                    check_in_date != check_out_date:
+                raise ValidationError(_("Cannot create attendance that "
+                                        "starts and ends on different days."))
+        return super().create(vals)
+
     @api.multi
-    def _compute_split(self):
+    def write(self, vals):
+        res = super().write(vals)
+        """ If the user clocks out after midnight, then it will split the
+        attendance at midnight of the employees timezone."""
         for rec in self:
             if rec.check_in and rec.check_out:
-                """ If split attendance is enabled and less than 2days between
-                check-in/out, then split the attendance into two attendances
-                with clock out/in at midnight"""
                 check_in_date = rec._get_attendance_employee_tz(
                     date=rec.check_in)
                 check_out_date = rec._get_attendance_employee_tz(
                     date=rec.check_out)
-                if rec.company_id.split_attendance and \
+                if rec.employee_id.company_id.split_attendance and \
                         check_in_date != check_out_date and \
                         not rec.split_attendance:
                     tz = pytz.timezone(rec.employee_id.tz)
@@ -63,13 +78,16 @@ class HrAttendance(models.Model):
                     new_check_in = tz.localize(datetime.combine(
                         datetime.strptime(
                             check_in_date,
-                            DEFAULT_SERVER_DATE_FORMAT) + timedelta(days=1),
+                            DEFAULT_SERVER_DATE_FORMAT) + timedelta(
+                            days=1),
                         time(0, 0, 0))).astimezone(pytz.utc)
-                    rec.write({'check_out': current_check_out,
-                               'split_attendance': True})
-                    rec.need_split = True
-                    self.env['hr.attendance'].sudo().create({
+                    rec.check_out = current_check_out.replace(tzinfo=None)
+                    rec.split_attendance = True
+                    new_attendance = self.env['hr.attendance'].sudo().create({
                         'employee_id': rec.employee_id.id,
                         'check_in': new_check_in,
-                        'check_out': new_check_out,
+                        'related_attendance_id': rec.id,
                         'split_attendance': False})
+                    new_attendance.write({'check_out': new_check_out})
+                    rec.related_attendance_id = new_attendance.id
+        return res
