@@ -16,7 +16,7 @@
                             <span class="fa fa-lg fa-building-o" title="Values set here are company-specific." aria-label="Values set here are company-specific." groups="base.group_multi_company" role="img"/>
                             <div class="text-muted">
                                 Choose if attendances will be split if the start/end times cross over midnight.
-                                Example: User clocks in at 11pm, then clocks out 9am next day, two attendance would be created with the first clock-out at midnight and next clock-in at 12:01am.
+                                Example: User clocks in at 11pm, then clocks out 9am next day, two attendance would be created with the first clock-out at 11:59pm and next clock-in at 12:00am.
                             </div>
                         </div>
                     </div>
