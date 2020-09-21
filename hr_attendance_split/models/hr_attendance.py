@@ -15,10 +15,13 @@ class HrAttendance(models.Model):
     split_attendance = fields.Boolean(
         string="Split Attendance",
         help="If attendance was split due to overnight coverage.")
+    need_split = fields.Boolean(
+        string="Split Needed",
+        compute="_compute_split")
     company_id = fields.Many2one(
         'res.company',
         string="Company",
-        related="employee_id.company_id")
+        related="employee_id.company_id", store=True)
 
     def _get_attendance_employee_tz(self, date=None):
         """ Convert date according to timezone of user """
@@ -37,8 +40,7 @@ class HrAttendance(models.Model):
         return attendance_tz_date_str
 
     @api.multi
-    def _compute_duration(self):
-        res = super()._compute_duration()
+    def _compute_split(self):
         for rec in self:
             if rec.check_in and rec.check_out:
                 """ If split attendance is enabled and less than 2days between
@@ -65,9 +67,9 @@ class HrAttendance(models.Model):
                         time(0, 0, 0))).astimezone(pytz.utc)
                     rec.write({'check_out': current_check_out,
                                'split_attendance': True})
+                    rec.need_split = True
                     self.env['hr.attendance'].sudo().create({
                         'employee_id': rec.employee_id.id,
                         'check_in': new_check_in,
                         'check_out': new_check_out,
                         'split_attendance': False})
-        return res
