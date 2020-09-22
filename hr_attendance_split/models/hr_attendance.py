@@ -56,9 +56,9 @@ class HrAttendance(models.Model):
 
     @api.multi
     def write(self, vals):
-        res = super().write(vals)
         """ If the user clocks out after midnight, then it will split the
         attendance at midnight of the employees timezone."""
+        res = super().write(vals)
         for rec in self:
             if rec.check_in and rec.check_out:
                 check_in_date = rec._get_attendance_employee_tz(
