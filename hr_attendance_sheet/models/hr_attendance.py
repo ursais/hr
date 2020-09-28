@@ -28,6 +28,14 @@ class HrAttendance(models.Model):
         'res.company',
         string="Company",
         related="attendance_sheet_id.company_id")
+    auto_lunch_enabled = fields.Boolean(string="Auto Lunch Enabled",
+                                        related="company_id.auto_lunch")
+    override_auto_lunch = fields.Boolean(
+        string="Override Auto Lunch",
+        help="Enable if you don't want the auto lunch to calculate.")
+    override_reason = fields.Text(
+        string="Override Reason",
+        help="State the reason you are overriding the auto lunch.")
 
     # Get Methods
     def _get_attendance_employee_tz(self, date=None):
@@ -95,7 +103,8 @@ class HrAttendance(models.Model):
                 # duration calculation but only for the first attendance.
                 if rec.company_id.auto_lunch and \
                    rec.duration > \
-                   rec.company_id.auto_lunch_duration != 0.0:
+                   rec.company_id.auto_lunch_duration != 0.0 and \
+                   not rec.override_auto_lunch:
                     day_start = rec.check_in.replace(hour=0, minute=0,
                                                      second=0,
                                                      microsecond=0)

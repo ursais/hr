@@ -7,6 +7,7 @@
            <field name="check_out" position="after">
                <field name="attendance_sheet_id"/>
                <field name="auto_lunch"/>
+               <field name="override_auto_lunch"/>
                <field name="duration" widget="timesheet_uom"/>
             </field>
         </field>
@@ -20,9 +21,12 @@
             <sheet position="inside">
                 <group name="duration_sheet">
                     <group>
+                        <field name="auto_lunch_enabled" invisible="1"/>
+                        <field name="auto_lunch" invisible="1"/>
+                        <field name="override_auto_lunch" attrs="{'invisible': [('auto_lunch_enabled', '=', False)]}"/>
+                        <field name="override_reason" attrs="{'required': [('override_auto_lunch', '=', True)], 'invisible': [('override_auto_lunch', '=', False)]}"/>
                         <field name="duration" widget="timesheet_uom"/>
                         <field name="attendance_sheet_id"/>
-                        <field name="auto_lunch" invisible="1"/>
                     </group>
                 </group>
             </sheet>

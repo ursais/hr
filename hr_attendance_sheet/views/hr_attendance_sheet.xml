@@ -90,6 +90,7 @@
                                         <field name="check_in"/>
                                         <field name="check_out"/>
                                         <field name="auto_lunch" readonly="1"/>
+                                        <field name="override_auto_lunch" readonly="1"/>
                                         <field name="duration" widget="timesheet_uom"/>
                                     </tree>
                                 </field>
