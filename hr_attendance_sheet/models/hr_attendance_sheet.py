@@ -117,7 +117,7 @@ class HrAttendanceSheet(models.Model):
     # Period Start/End Methods for when creating Sheets
     @api.model
     def _get_period_start(self, company, date):
-        r = company and company.attendance_sheet_range or 'WEEKLY'
+        r = company and company.attendance_sheet_range
         if r == 'WEEKLY':
             if company.attendance_week_start:
                 delta = relativedelta(
@@ -138,7 +138,7 @@ class HrAttendanceSheet(models.Model):
 
     @api.model
     def _get_period_end(self, company, date):
-        r = company and company.attendance_sheet_range or 'WEEKLY'
+        r = company and company.attendance_sheet_range
         if r == 'WEEKLY':
             if company.attendance_week_start:
                 delta = relativedelta(weekday=(int(
