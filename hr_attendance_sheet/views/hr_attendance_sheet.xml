@@ -84,7 +84,7 @@
                             </group>
                             <group name="attendance">
                                 <field name="attendance_ids" attrs="{'readonly': ['|', ('can_review', '!=', True), ('state', '=', 'done')]}" nolabel="1" options="{'no_create_edit': True, 'no_create': True, 'no_open': True}" context="{'default_employee_id': employee_id, 'default_attendance_sheet_id': active_id}">
-                                    <tree editable="bottom">
+                                    <tree>
                                         <field name="employee_id" invisible="1"/>
                                         <field name="attendance_sheet_id" invisible="1"/>
                                         <field name="check_in"/>
