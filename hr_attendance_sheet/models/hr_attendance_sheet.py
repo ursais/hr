@@ -103,16 +103,20 @@ class HrAttendanceSheet(models.Model):
         employees = self.env['hr.employee'].search([
             ('use_attendance_sheets', '=', True),
             ('active', '=', True)])
-        period_start = self._default_date_start()
-        period_end = self._default_date_end()
         for employee in employees:
+            period_start = self._get_period_start(
+                employee.company_id, fields.Date.context_today(self))
+            period_end = self._get_period_end(
+                employee.company_id, fields.Date.context_today(self))
             sheet = self.env['hr.attendance.sheet'].search([
                 ('employee_id', '=', employee.id),
-                ('date_start', '=', period_start),
-                ('date_end', '=', period_end)])
+                ('date_start', '>=', period_start),
+                ('date_end', '<=', period_end)])
             if not sheet:
                 self.env['hr.attendance.sheet'].create({
-                    'employee_id': employee.id})
+                    'employee_id': employee.id,
+                    'date_start': period_start,
+                    'date_end': period_end})
 
     # Period Start/End Methods for when creating Sheets
     @api.model
