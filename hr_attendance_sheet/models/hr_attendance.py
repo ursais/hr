@@ -99,16 +99,19 @@ class HrAttendance(models.Model):
                 delta = rec.check_out - rec.check_in
                 rec.duration = delta.total_seconds() / 3600
 
-                # If auto lunch is enabled for the company then adjust the
-                # duration calculation but only for the first attendance.
+                # If auto lunch is enabled for the company and time between
+                # other attendances < lunch period, then adjust the duration
+                # calculation for the first attendance.
                 if rec.company_id.auto_lunch and \
                    rec.duration > \
                    rec.company_id.auto_lunch_duration != 0.0 and \
                    not rec.override_auto_lunch:
-                    day_start = rec.check_in.replace(hour=0, minute=0,
+                    day_start = rec.check_in.replace(hour=0,
+                                                     minute=0,
                                                      second=0,
                                                      microsecond=0)
-                    day_end = rec.check_out.replace(hour=23, minute=59,
+                    day_end = rec.check_out.replace(hour=23,
+                                                    minute=59,
                                                     second=59,
                                                     microsecond=59)
                     first_attendance = self.env["hr.attendance"].search(
@@ -117,10 +120,30 @@ class HrAttendance(models.Model):
                          ("employee_id", "=", rec.employee_id.id)],
                         order="check_in asc",
                         limit=1)
+                    today_attendances = self.env["hr.attendance"].search(
+                        [("check_in", ">=", day_start),
+                         ("check_in", "<=", day_end),
+                         ("employee_id", "=", rec.employee_id.id)])
+                    time_between_attendances = 0.0
                     if first_attendance and first_attendance.id == rec.id:
-                        rec.duration = (delta.total_seconds() / 3600) - \
-                            rec.company_id.auto_lunch_hours
-                        rec.write({'auto_lunch': True})
+                        if len(today_attendances) > 1:
+                            for attendance in today_attendances:
+                                if attendance.id != first_attendance.id:
+                                    delta2 = attendance.check_in - \
+                                             first_attendance.check_out
+                                    time_between_attendances = \
+                                        delta2.total_seconds() / 3600
+                                    rec.write({'auto_lunch': False})
+                            if time_between_attendances < \
+                                    rec.company_id.auto_lunch_hours:
+                                rec.duration = \
+                                    (delta.total_seconds() / 3600) - \
+                                    rec.company_id.auto_lunch_hours
+                                rec.write({'auto_lunch': True})
+                        else:
+                            rec.duration = (delta.total_seconds() / 3600) - \
+                                           rec.company_id.auto_lunch_hours
+                            rec.write({'auto_lunch': True})
                     else:
                         rec.write({'auto_lunch': False})
                 elif rec.company_id.auto_lunch and rec.auto_lunch:
