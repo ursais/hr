@@ -61,7 +61,7 @@
                             <label for="auto_lunch"/>
                             <span class="fa fa-lg fa-building-o" title="Values set here are company-specific." aria-label="Values set here are company-specific." groups="base.group_multi_company" role="img"/>
                             <div class="text-muted">
-                                Choose if lunches are auto calculated after a certain duration.
+                                Choose if lunches are auto calculated after a certain duration. If a single attendance surpasses the duration, an auto lunch will be applied. If there are multiple attendances, but the time between them is shorter than the lunch time, then an auto lunch will be applied.
                             </div>
                             <div class="content-group" attrs="{'invisible': [('auto_lunch', '=', False)]}">
                                 <div class="row mt16">
