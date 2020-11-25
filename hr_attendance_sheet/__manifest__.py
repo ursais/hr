@@ -22,6 +22,7 @@
         'report/hr_attendance_sheet_report.xml',
         'views/hr_attendance_sheet.xml',
         'views/hr_attendance_view.xml',
+        'views/hr_department.xml',
         'views/hr_employee.xml',
         'views/res_config_settings_views.xml',
     ],

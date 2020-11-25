@@ -60,6 +60,13 @@ class HrAttendanceSheet(models.Model):
     review_policy = fields.Selection(
         string="Review Policy",
         related="company_id.attendance_sheet_review_policy")
+    attendance_admin = fields.Many2one(
+        'hr.employee',
+        string="Attendance Admin",
+        help="""In addition to the employees manager, this person can
+        administer attendances for all employees in the department. This field
+        is set on the department.""",
+        related="department_id.attendance_admin")
 
     # Default Values
     def _default_date_start(self):
@@ -201,10 +208,23 @@ class HrAttendanceSheet(models.Model):
         if self.review_policy == 'hr':
             res |= self.env.ref('hr.group_hr_user').users
         elif self.review_policy == 'employee_manager':
-            res |= self.employee_id.parent_id.user_id
+            if self.department_id.attendance_admin and \
+                    self.department_id.attendance_admin != \
+                    self.employee_id:
+                res |= self.employee_id.parent_id.user_id + \
+                    self.department_id.attendance_admin.user_id
+            else:
+                res |= self.employee_id.parent_id.user_id
         elif self.review_policy == 'hr_or_manager':
-            res |= self.employee_id.parent_id.user_id + \
-                self.env.ref('hr.group_hr_user').users
+            if self.department_id.attendance_admin and \
+                    self.department_id.attendance_admin != \
+                    self.employee_id:
+                res |= self.employee_id.parent_id.user_id + \
+                    self.env.ref('hr.group_hr_user').users + \
+                    self.department_id.attendance_admin.user_id
+            else:
+                res |= self.employee_id.parent_id.user_id + \
+                       self.env.ref('hr.group_hr_user').users
         return res
 
     @api.multi

@@ -18,3 +18,11 @@ class HrEmployee(models.Model):
         help="""Used in the attendance sheet auto creation process. Employees \
              that have the 'Hourly' type will have attendance sheets \
              automatically created""")
+
+    attendance_admin = fields.Many2one(
+        'hr.employee',
+        string="Attendance Admin",
+        help="""In addition to the employees manager, this person can
+        administer attendances for all employees in the department. This field
+        is set on the department.""",
+        related="department_id.attendance_admin")

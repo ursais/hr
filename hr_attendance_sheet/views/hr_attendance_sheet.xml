@@ -70,6 +70,7 @@
                         <field name="hours_to_work"/>
                         <field name="manager_id"/>
                         <field name="review_policy"/>
+                        <field name="attendance_admin"/>
                     </group>
                     <group col="4" colspan="2">
                         <field name="date_start"/>
@@ -130,6 +131,7 @@
                 <field name="employee_id"/>
                 <field name="department_id"/>
                 <field name="manager_id"/>
+                <field name="attendance_admin"/>
                 <separator/>
                 <filter string="Current Period" name="current_period" domain="['&amp;',('date_start','&lt;=', context_today().strftime('%Y-%m-%d')),('date_end','&gt;', context_today().strftime('%Y-%m-%d'))]" help="Overdue invoices, maturity date passed"/>
                 <filter string="Previous Periods" name="previous_periods" domain="[('date_start','&lt;', context_today().strftime('%Y-%m-%d'))]"/>
@@ -166,7 +168,7 @@
         <field name="res_model">hr.attendance.sheet</field>
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
-        <field name="domain">[('employee_id.parent_id.user_id', '=', uid)]</field>
+        <field name="domain">[('employee_id.user_id', '!=', uid), '|', ('employee_id.parent_id.user_id', '=', uid),('department_id.attendance_admin.user_id', '=', uid)]</field>
         <field name="view_id" ref="hr_attendance_sheet_view_tree"/>
     </record>
 

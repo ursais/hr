@@ -36,6 +36,13 @@ class HrAttendance(models.Model):
     override_reason = fields.Text(
         string="Override Reason",
         help="State the reason you are overriding the auto lunch.")
+    attendance_admin = fields.Many2one(
+        'hr.employee',
+        string="Attendance Admin",
+        help="""In addition to the employees manager, this person can
+        administer attendances for all employees in the department. This field
+        is set on the department.""",
+        related="department_id.attendance_admin")
 
     # Get Methods
     def _get_attendance_employee_tz(self, date=None):

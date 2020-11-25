@@ -31,8 +31,8 @@ class ResCompany(models.Model):
         string='Attendance Sheet Review Policy',
         selection=[
             ('hr', 'HR Manager/Officer'),
-            ('employee_manager', "Employee's Manager"),
-            ('hr_or_manager', "HR or Employee's Manager")
+            ('employee_manager', "Employee's Manager or Attendance Admin"),
+            ('hr_or_manager', "HR or Employee's Manager or Attendance Admin")
         ],
         default='hr',
         help='How Attendance Sheets review is performed.')
