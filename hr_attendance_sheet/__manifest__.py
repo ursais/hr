@@ -24,6 +24,7 @@
         'views/hr_attendance_view.xml',
         'views/hr_employee.xml',
         'views/res_config_settings_views.xml',
+        'views/res_company.xml'
     ],
     'development_status': 'alpha',
 }
