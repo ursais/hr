@@ -9,6 +9,7 @@ from datetime import datetime
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
+    uses_attendance_sheets = fields.Boolean('Use Attendance Sheets', default=False)
     attendance_sheet_range = fields.Selection(
         selection=[('MONTHLY', 'Month'),
                    ('BIWEEKLY', 'Bi-Week'),

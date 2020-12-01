@@ -108,6 +108,10 @@ class HrAttendanceSheet(models.Model):
             #     employee.company_id, fields.Date.context_today(self))
             # period_end = self._get_period_end(
             #     employee.company_id, fields.Date.context_today(self))
+            if not employee.company_id.date_start or not employee.company_id.date_end:
+                raise UserError(_("Date From and Date To for Attendance \
+                                   must be set on the Company %s") %
+                                employee.company_id.name)
             sheet = self.env['hr.attendance.sheet'].search([
                 ('employee_id', '=', employee.id),
                 ('date_start', '>=', employee.company_id.date_start),
@@ -120,7 +124,7 @@ class HrAttendanceSheet(models.Model):
         self.check_pay_period_dates()
 
     def check_pay_period_dates(self):
-        companies = self.env['res.company'].search([])
+        companies = self.env['res.company'].search([('uses_attendance_sheets', '!=', False)])
         for company_id in companies:
             if datetime.today().date() > company_id.date_end:
                 company_id.date_start = company_id.date_end + relativedelta(days=1)

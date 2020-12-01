@@ -6,9 +6,10 @@
             <notebook position="inside">
                 <page string="HR Attendance Info" name="hr_info">
                     <group string="Payment Frequency" name="payment_freq">
-                        <field name="attendance_sheet_range"/>
-                        <field name="date_start"/>
-                        <field name="date_end"/>
+                        <field name="uses_attendance_sheets"/>
+                        <field name="attendance_sheet_range" attrs="{'invisible': [('uses_attendance_sheets', '=', False)]}"/>
+                        <field name="date_start" attrs="{'invisible': [('uses_attendance_sheets', '=', False)]}"/>
+                        <field name="date_end" attrs="{'invisible': [('uses_attendance_sheets', '=', False)]}"/>
                     </group>
                 </page>
             </notebook>
