@@ -9,7 +9,7 @@ from datetime import datetime
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
-    uses_attendance_sheets = fields.Boolean('Use Attendance Sheets', default=False)
+    use_attendance_sheets = fields.Boolean('Use Attendance Sheets', default=False)
     attendance_sheet_range = fields.Selection(
         selection=[('MONTHLY', 'Month'),
                    ('BIWEEKLY', 'Bi-Week'),
@@ -17,7 +17,6 @@ class ResCompany(models.Model):
                    ('DAILY', 'Day')],
         string='Attendance Sheet Range',
         default='WEEKLY',
-        required=True,
         help="The range of your Attendance Sheet.")
 
     @api.onchange('attendance_sheet_range')
@@ -26,20 +25,21 @@ class ResCompany(models.Model):
             self._origin.write({"date_start": datetime.today().date().replace(day=1)})
 
     date_start = fields.Date(string="Date From",
-                             required=True,
-                             index=True)
+                             index=True,
+                             default=datetime.today().date())
     date_end = fields.Date(string="Date To",
                            readonly=True,
                            index=True)
 
     def set_date_end(self, company):
         company = self.browse(company)
-        if company.attendance_sheet_range == 'WEEKLY':
-            return company.date_start + relativedelta(days=6)
-        elif company.attendance_sheet_range == 'BIWEEKLY':
-            return company.date_start + relativedelta(days=13)
-        else:
-            return company.date_start + relativedelta(months=1, day=1, days=-1)
+        if company.date_start:
+            if company.attendance_sheet_range == 'WEEKLY':
+                return company.date_start + relativedelta(days=6)
+            elif company.attendance_sheet_range == 'BIWEEKLY':
+                return company.date_start + relativedelta(days=13)
+            else:
+                return company.date_start + relativedelta(months=1, day=1, days=-1)
 
     @api.multi
     def write(self, vals):
@@ -48,11 +48,12 @@ class ResCompany(models.Model):
             self.write({'date_end': self.set_date_end(self.id)})
         return res
 
-    @api.multi
+    @api.model
     def create(self, vals):
+        res = super().create(vals)
         if vals.get('date_start'):
-            vals.update({'date_end': self.set_date_end(vals['id'])})
-        return super().write(vals)
+            res.write({'date_end': self.set_date_end(res.id)})
+        return res
 
     attendance_week_start = fields.Selection(
         selection=[('0', 'Monday'),
