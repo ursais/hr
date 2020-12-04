@@ -61,15 +61,6 @@ class HrAttendanceSheet(models.Model):
         string="Review Policy",
         related="company_id.attendance_sheet_review_policy")
 
-    # Default Values
-    # def _default_date_start(self):
-    #     return self._get_period_start(self.env.user.company_id,
-    #                                   fields.Date.context_today(self))
-
-    # def _default_date_end(self):
-    #     return self._get_period_end(self.env.user.company_id,
-    #                                 fields.Date.context_today(self))
-
     # Automation Methods
     def activity_update(self):
         """ Activity processing that shows in chatter for approval activity."""
@@ -100,14 +91,13 @@ class HrAttendanceSheet(models.Model):
     # Scheduled Action Methods
     def _create_sheet_id(self):
         """ Method used by the scheduling action to auto create sheets."""
+        companies = self.env['res.company'].\
+            search([('use_attendance_sheets', '=', True)]).ids
         employees = self.env['hr.employee'].search([
             ('use_attendance_sheets', '=', True),
+            ('company_id', 'in', companies),
             ('active', '=', True)])
         for employee in employees:
-            # period_start = self._get_period_start(
-            #     employee.company_id, fields.Date.context_today(self))
-            # period_end = self._get_period_end(
-            #     employee.company_id, fields.Date.context_today(self))
             if not employee.company_id.date_start or not employee.company_id.date_end:
                 raise UserError(_("Date From and Date To for Attendance \
                                    must be set on the Company %s") %
@@ -124,64 +114,11 @@ class HrAttendanceSheet(models.Model):
         self.check_pay_period_dates()
 
     def check_pay_period_dates(self):
-        companies = self.env['res.company'].search([('uses_attendance_sheets', '!=', False)])
+        companies = self.env['res.company'].search([('use_attendance_sheets', '!=', False)])
         for company_id in companies:
             if datetime.today().date() > company_id.date_end:
                 company_id.date_start = company_id.date_end + relativedelta(days=1)
                 company_id.set_date_end(company_id.id)
-
-    # Period Start/End Methods for when creating Sheets
-    # @api.model
-    # def _get_period_start(self, company, date):
-    #     r = company and company.attendance_sheet_range
-    #     if r == 'WEEKLY':
-    #         if company.attendance_week_start:
-    #             delta = relativedelta(
-    #                 weekday=int(company.attendance_week_start), days=6)
-    #         else:
-    #             delta = relativedelta(days=date.weekday())
-    #         return date - delta
-    #     elif r == 'BIWEEKLY':
-    #         if company.attendance_week_start:
-    #             delta = relativedelta(
-    #                 weekday=int(company.attendance_week_start), days=12)
-    #         else:
-    #             delta = relativedelta(days=date.weekday())
-    #         return date - delta
-    #     elif r == 'MONTHLY':
-    #         return date + relativedelta(day=1)
-    #     return date
-
-    # @api.model
-    # def _get_period_end(self, company, date):
-    #     r = company and company.attendance_sheet_range
-    #     if r == 'WEEKLY':
-    #         if company.attendance_week_start:
-    #             delta = relativedelta(weekday=(int(
-    #                 company.attendance_week_start) + 6) % 7)
-    #         else:
-    #             delta = relativedelta(days=6 - date.weekday())
-    #         return date + delta
-    #     elif r == 'BIWEEKLY':
-    #         if company.attendance_week_start:
-    #             delta = relativedelta(weekday=(int(
-    #                 company.attendance_week_start) + 6) % 7)
-    #         else:
-    #             delta = relativedelta(days=12 - date.weekday())
-    #         return date + delta
-    #     elif r == 'MONTHLY':
-    #         return date + relativedelta(months=1, day=1, days=-1)
-    #     return date
-
-    # @api.multi
-    # def set_date_end(self, company, date):
-    #     start_date = company.date_start
-    #     if company.attendance_sheet_range == 'WEEKLY':
-    #         company.date_end = start_date + relativedelta(days=6)
-    #     elif company.attendance_sheet_range == 'BIWEEKLY':
-    #         company.date_end = start_date + relativedelta(days=13)
-    #     else:
-    #         company.date_end = start_date + relativedelta(months=1, day=1, days=-1)
 
     # Compute Methods
     @api.multi
