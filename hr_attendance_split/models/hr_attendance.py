@@ -23,22 +23,6 @@ class HrAttendance(models.Model):
     related_attendance_id = fields.Many2one('hr.attendance',
                                             string='Related Attendance')
 
-    def _get_attendance_employee_tz(self, date=None):
-        """ Convert date according to timezone of user """
-        if not date:
-            return False
-        tz = False
-        if self.employee_id:
-            tz = self.employee_id.tz
-        time_zone = pytz.timezone(tz or 'UTC')
-        attendance_dt = datetime.strptime(str(date),
-                                          DEFAULT_SERVER_DATETIME_FORMAT)
-        attendance_tz_dt = pytz.UTC.localize(attendance_dt)
-        attendance_tz_dt = attendance_tz_dt.astimezone(time_zone)
-        attendance_tz_date_str = datetime.strftime(
-            attendance_tz_dt, DEFAULT_SERVER_DATE_FORMAT)
-        return attendance_tz_date_str
-
     @api.model
     def create(self, vals):
         """ Prevent overnight attendance during creation"""
@@ -61,26 +45,29 @@ class HrAttendance(models.Model):
         res = super().write(vals)
         for rec in self:
             if rec.check_in and rec.check_out:
-                check_in_date = rec._get_attendance_employee_tz(
-                    date=rec.check_in)
-                check_out_date = rec._get_attendance_employee_tz(
-                    date=rec.check_out)
+                check_in_date = pytz.utc.localize(
+                    rec.check_in).astimezone(pytz.timezone(
+                        rec.employee_id.tz)).date()
+                check_out_date = pytz.utc.localize(
+                    rec.check_out).astimezone(pytz.timezone(
+                        rec.employee_id.tz)).date()
                 if rec.employee_id.company_id.split_attendance and \
                         check_in_date != check_out_date and \
                         not rec.split_attendance:
                     tz = pytz.timezone(rec.employee_id.tz)
                     current_check_out = tz.localize(
                         datetime.combine(datetime.strptime(
-                            str(rec.check_in.date()),
+                            str(check_in_date),
                             DEFAULT_SERVER_DATE_FORMAT),
                             time(23, 59, 59))).astimezone(pytz.utc)
+                    new_check_in = tz.localize(
+                        datetime.combine(datetime.strptime(
+                            str(pytz.utc.localize(rec.check_in).astimezone(
+                                pytz.timezone(rec.employee_id.tz)).date() +
+                                timedelta(days=1)),
+                            DEFAULT_SERVER_DATE_FORMAT),
+                            time(0, 0, 0))).astimezone(pytz.utc)
                     new_check_out = rec.check_out
-                    new_check_in = tz.localize(datetime.combine(
-                        datetime.strptime(
-                            check_in_date,
-                            DEFAULT_SERVER_DATE_FORMAT) + timedelta(
-                            days=1),
-                        time(0, 0, 0))).astimezone(pytz.utc)
                     rec.check_out = current_check_out.replace(tzinfo=None)
                     rec.split_attendance = True
                     new_attendance = self.env['hr.attendance'].sudo().create({
@@ -88,6 +75,6 @@ class HrAttendance(models.Model):
                         'check_in': new_check_in,
                         'related_attendance_id': rec.id,
                         'split_attendance': False})
-                    new_attendance.write({'check_out': new_check_out})
                     rec.related_attendance_id = new_attendance.id
+                    new_attendance.write({'check_out': new_check_out})
         return res
