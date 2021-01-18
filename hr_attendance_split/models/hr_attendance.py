@@ -27,11 +27,13 @@ class HrAttendance(models.Model):
     def create(self, vals):
         """ Prevent overnight attendance during creation"""
         if vals.get('check_out', False):
-            check_in_date = self._get_attendance_employee_tz(
-                date=vals.get('check_in'))
-            check_out_date = self._get_attendance_employee_tz(
-                date=vals.get('check_out'))
             employee = self.env['hr.employee'].browse(vals.get('employee_id'))
+            check_in_date = pytz.utc.localize(datetime.strptime(
+                vals.get('check_in'), '%Y-%m-%d %H:%M:%S')).astimezone(
+                pytz.timezone(employee.tz)).date()
+            check_out_date = pytz.utc.localize(datetime.strptime(
+                vals.get('check_out'), '%Y-%m-%d %H:%M:%S')).astimezone(
+                pytz.timezone(employee.tz)).date()
             if employee.company_id.split_attendance and \
                     check_in_date != check_out_date:
                 raise ValidationError(_("Cannot create attendance that "
