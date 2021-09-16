@@ -27,13 +27,14 @@ class MailChannel(models.Model):
             [('create_date', '<', fields.Date.today()),
              ('create_date', '>=', date_before_aweek)])
         if badge_ids:
-            channel_general.with_context(
-                {'badge_ids': badge_ids,
-                 'partner_ids': partner_ids}
-            ).message_post_with_template(
-                template.id,
-                model=self._name,
-                composition_mode='mass_mail'
-            )
+            for partner_id in partner_ids:
+                channel_general.with_context(
+                    {'badge_ids': badge_ids,
+                    'partner_ids': partner_id}
+                ).message_post_with_template(
+                    template.id,
+                    model=self._name,
+                    composition_mode='mass_mail'
+                )
 
         return True
