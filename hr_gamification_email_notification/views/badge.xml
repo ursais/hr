@@ -1,0 +1,110 @@
+<odoo>
+
+    <record id="email_template_badge_weekly_awards_inherit" model="mail.template">
+        <field name="body_html" type="html">
+        <p
+            >Congratulations to everyone who earned badges last week.  Many thanks for your contributions to the team!</p>
+            <table
+                border="0"
+                cellpadding="0"
+                cellspacing="0"
+                style="padding-top: 16px; background-color: #F1F1F1; font-family:Verdana, Arial,sans-serif; color: #454748; width: 100%; border-collapse:separate;"
+            ><tr><td align="center">
+            <table
+                            width="900"
+                            border="1"
+                            cellpadding="2"
+                            style="min-width: 800px; background-color: white; border-collapse:collapse;"
+                        >
+            <thead style="background-color: blue;color: white;text-align: left;">
+                <tr>
+                    <th>Badge</th>
+                    <th width="350">Comment</th>
+                    <th>Awarded On</th>
+                    <th>Awarded To</th>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-set="badges" t-value="ctx.get('badge_ids', False)" />
+                <t t-foreach="badges" t-as="badge">
+                <tr>
+                    <td style="color: blue;"><span
+                                                t-esc="badge.badge_name or '' "
+                                            /></td>
+                    <td><span t-esc="badge.comment or '' " /></td>
+                    <td><span t-esc="badge.create_date or '' " /></td>
+                    <td><span t-esc="badge.user_id.name or '' " /></td>
+                </tr>
+                </t>
+            </tbody>
+            </table>
+            </td></tr>
+            </table>
+
+            <div align="center" style="min-width: 590px;">
+            <table
+                    border="0"
+                    cellpadding="0"
+                    cellspacing="0"
+                    width="590"
+                    style=" font-family: 'Verdana Regular'; color: #454748; min-width: 590px; background-color: white; font-size: 11px; padding: 0px 8px 0px 8px; border-collapse:separate;"
+                >
+                <tr>
+                    <td valign="middle" align="left">
+                         <span t-esc="user.company_id.name or '' " />
+                    </td>
+                    <td valign="middle" align="right" style="opacity: 0.7;">
+                        <span t-esc="user.company_id.phone or '' " />
+                        <t t-if="user.company_id.email">
+                            <a
+                                    href="'mailto:%s' % ${user.company_id.email}"
+                                    style="text-decoration:none; color: #454748;"
+                                >
+                                <span t-esc="user.company_id.email or '' " />
+                            </a>
+                        </t>
+                        <t t-if="user.company_id.website">
+                            <a
+                                    href="'mailto:%s' % ${user.company_id.email}"
+                                    style="text-decoration:none; color: #454748;"
+                                >
+                                <span t-esc="user.company_id.website or '' " />
+                            </a>
+                        </t>
+                    </td>
+                </tr>
+            </table>
+            </div>
+
+        </field>
+    </record>
+
+    <record id="badge_user_list_view" model="ir.ui.view">
+        <field name="name">Badge User List View</field>
+        <field name="model">gamification.badge.user</field>
+        <field name="arch" type="xml">
+            <tree create="false">
+                <field name="badge_name" />
+                <field name="badge_id" />
+                <field name="user_id" />
+                <field name="sender_id" />
+                <field name="challenge_id" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="badge_user_list_action" model="ir.actions.act_window">
+        <field name="name">User Badge</field>
+        <field name="res_model">gamification.badge.user</field>
+        <field name="view_mode">tree</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem
+        id="gamification_badge_user_list_menu_hr"
+        parent="hr_gamification.menu_hr_gamification"
+        action="badge_user_list_action"
+        groups="hr.group_hr_user"
+    />
+</odoo>
