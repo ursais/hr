@@ -24,8 +24,7 @@ class HrEmployee(models.Model):
                     )
                 )
                 for attachment in irAttachments:
-                    attachment.write({
-                        "res_model": "hr.employee",
-                        "res_id": employee.id
-                    })
+                    attachment.write(
+                        {"res_model": "hr.employee", "res_id": employee.id}
+                    )
         return employees
