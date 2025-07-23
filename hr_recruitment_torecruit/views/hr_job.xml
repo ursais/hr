@@ -44,7 +44,6 @@
         <field name="arch" type="xml">
             <field name="no_of_recruitment" position="after">
                 <field name="to_recruit" />
-                <field name="this_does_not_exist" />
             </field>
         </field>
     </record>
